@@ -37,7 +37,7 @@ function App() {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [repeatType, setRepeatType] = useState('none');
-  const [repeatEndDate, setRepeatEndDate] = useState('');
+  const [repeatCount, setRepeatCount] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [showAdminLogin, setShowAdminLogin] = useState(false);
@@ -109,13 +109,6 @@ function App() {
       const startDateTime = new Date(`${selectedDate.toISOString().split('T')[0]}T${startTime}`);
       const endDateTime = new Date(`${selectedDate.toISOString().split('T')[0]}T${endTime}`);
 
-      // 반복 종료일이 있는 경우 해당 날짜의 시간을 23:59:59로 설정
-      let repeatEndDateTime = null;
-      if (repeatType !== 'none' && repeatEndDate) {
-        repeatEndDateTime = new Date(repeatEndDate);
-        repeatEndDateTime.setHours(23, 59, 59, 999);
-      }
-
       console.log('예약 데이터:', {
         roomId: selectedRoom,
         userName,
@@ -124,7 +117,7 @@ function App() {
         startTime: startDateTime.toISOString(),
         endTime: endDateTime.toISOString(),
         repeatType,
-        repeatEndDate: repeatEndDateTime ? repeatEndDateTime.toISOString() : undefined
+        repeatCount: repeatType !== 'none' ? parseInt(repeatCount) : undefined
       });
 
       const response = await axios.post('http://localhost:5000/api/reservations', {
@@ -135,7 +128,7 @@ function App() {
         startTime: startDateTime.toISOString(),
         endTime: endDateTime.toISOString(),
         repeatType,
-        repeatEndDate: repeatEndDateTime ? repeatEndDateTime.toISOString() : undefined
+        repeatCount: repeatType !== 'none' ? parseInt(repeatCount) : undefined
       });
 
       if (response.status === 201) {
@@ -150,7 +143,7 @@ function App() {
         setUserName('');
         setContact('');
         setRepeatType('none');
-        setRepeatEndDate('');
+        setRepeatCount('');
         
         setMessage('예약이 완료되었습니다.');
       }
@@ -453,13 +446,15 @@ function App() {
                 {repeatType !== 'none' && (
                   <div className="form-row">
                     <div className="form-column">
-                      <label>반복 종료일: <span style={{ color: 'red' }}>*</span></label>
+                      <label>반복 횟수: <span style={{ color: 'red' }}>*</span></label>
                       <input
-                        type="date"
-                        value={repeatEndDate}
-                        onChange={(e) => setRepeatEndDate(e.target.value)}
-                        min={selectedDate.toISOString().split('T')[0]}
+                        type="number"
+                        min="1"
+                        max="52"
+                        value={repeatCount}
+                        onChange={(e) => setRepeatCount(e.target.value)}
                         required
+                        placeholder="반복할 횟수를 입력하세요"
                       />
                     </div>
                   </div>

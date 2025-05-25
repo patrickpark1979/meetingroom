@@ -205,7 +205,7 @@ app.post('/api/rooms', async (req, res) => {
 // 예약 생성
 app.post('/api/reservations', async (req, res) => {
   try {
-    const { roomId, userName, contact, meetingName, startTime, endTime, repeatType, repeatEndDate } = req.body;
+    const { roomId, userName, contact, meetingName, startTime, endTime, repeatType, repeatCount } = req.body;
     
     // 기본 예약 생성 함수
     const createReservation = async (start, end) => {
@@ -221,10 +221,9 @@ app.post('/api/reservations', async (req, res) => {
     };
 
     // 반복 예약 처리
-    if (repeatType && repeatType !== 'none' && repeatEndDate) {
+    if (repeatType && repeatType !== 'none' && repeatCount) {
       const startDate = new Date(startTime);
       const endDate = new Date(endTime);
-      const repeatUntil = new Date(repeatEndDate);
       const reservations = [];
 
       // 시간 차이 계산 (밀리초)
@@ -235,14 +234,11 @@ app.post('/api/reservations', async (req, res) => {
       const startMinutes = startDate.getMinutes();
       const startSeconds = startDate.getSeconds();
 
-      // 날짜만 비교하기 위해 시간을 00:00:00으로 설정
-      startDate.setHours(0, 0, 0, 0);
-      repeatUntil.setHours(0, 0, 0, 0);
-
       let currentDate = new Date(startDate);
+      let count = 0;
       
-      // 종료일까지 포함하여 반복
-      while (true) {
+      // 지정된 횟수만큼 반복
+      while (count < repeatCount) {
         const newStartTime = new Date(currentDate);
         // 원래 예약의 시간을 설정
         newStartTime.setHours(startHours, startMinutes, startSeconds);
@@ -271,10 +267,7 @@ app.post('/api/reservations', async (req, res) => {
           currentDate.setMonth(currentDate.getMonth() + 1);
         }
 
-        // 현재 날짜가 종료일을 초과하면 종료
-        if (currentDate.getTime() > repeatUntil.getTime()) {
-          break;
-        }
+        count++;
       }
 
       res.status(201).json(reservations);
