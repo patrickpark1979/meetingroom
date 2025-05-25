@@ -447,14 +447,20 @@ function App() {
                       <input
                         type="number"
                         min="1"
-                        max="52"
+                        max={repeatType === 'weekly' ? "52" : "12"}
                         value={repeatCount}
-                        onChange={(e) => setRepeatCount(e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const max = repeatType === 'weekly' ? 52 : 12;
+                          if (value === '' || (parseInt(value) >= 1 && parseInt(value) <= max)) {
+                            setRepeatCount(value);
+                          }
+                        }}
                         required
-                        placeholder="반복할 횟수를 입력하세요"
+                        placeholder={`반복할 횟수를 입력하세요 (최대 ${repeatType === 'weekly' ? '52' : '12'}회)`}
                       />
                       <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
-                        {repeatType === 'weekly' ? '주 단위로 반복됩니다.' : '월 단위로 반복됩니다.'}
+                        {repeatType === 'weekly' ? '주 단위로 반복됩니다. (최대 52주)' : '월 단위로 반복됩니다. (최대 12개월)'}
                       </small>
                     </div>
                   </div>
