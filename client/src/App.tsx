@@ -418,12 +418,12 @@ function App() {
                 </div>
                 <div className="form-row">
                   <div className="form-column">
-                    <label htmlFor="title">모임명: <span style={{ color: 'red' }}>*</span></label>
+                    <label htmlFor="meetingName">모임명: <span style={{ color: 'red' }}>*</span></label>
                     <input
                       type="text"
-                      id="title"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
+                      id="meetingName"
+                      value={meetingName}
+                      onChange={(e) => setMeetingName(e.target.value)}
                       required
                       placeholder="모임명을 입력하세요"
                     />
@@ -434,7 +434,10 @@ function App() {
                     <label>반복 예약: <span style={{ color: 'red' }}>*</span></label>
                     <select
                       value={repeatType}
-                      onChange={(e) => setRepeatType(e.target.value)}
+                      onChange={(e) => {
+                        setRepeatType(e.target.value);
+                        setRepeatCount('');
+                      }}
                       required
                     >
                       <option value="none">반복 안함</option>
@@ -456,6 +459,9 @@ function App() {
                         required
                         placeholder="반복할 횟수를 입력하세요"
                       />
+                      <small style={{ color: '#666', display: 'block', marginTop: '5px' }}>
+                        {repeatType === 'weekly' ? '주 단위로 반복됩니다.' : '월 단위로 반복됩니다.'}
+                      </small>
                     </div>
                   </div>
                 )}

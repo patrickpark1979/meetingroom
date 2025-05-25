@@ -237,8 +237,20 @@ app.post('/api/reservations', async (req, res) => {
       let currentDate = new Date(startDate);
       let count = 0;
       
+      // 첫 번째 예약 생성 (시작일)
+      const firstReservation = await createReservation(startDate, endDate);
+      reservations.push(firstReservation);
+      count++;
+
       // 지정된 횟수만큼 반복
       while (count < repeatCount) {
+        // 다음 날짜 계산
+        if (repeatType === 'weekly') {
+          currentDate.setDate(currentDate.getDate() + 7);
+        } else if (repeatType === 'monthly') {
+          currentDate.setMonth(currentDate.getMonth() + 1);
+        }
+
         const newStartTime = new Date(currentDate);
         // 원래 예약의 시간을 설정
         newStartTime.setHours(startHours, startMinutes, startSeconds);
@@ -258,13 +270,6 @@ app.post('/api/reservations', async (req, res) => {
         if (!existingReservation) {
           const reservation = await createReservation(newStartTime, newEndTime);
           reservations.push(reservation);
-        }
-
-        // 다음 날짜 계산
-        if (repeatType === 'weekly') {
-          currentDate.setDate(currentDate.getDate() + 7);
-        } else if (repeatType === 'monthly') {
-          currentDate.setMonth(currentDate.getMonth() + 1);
         }
 
         count++;
