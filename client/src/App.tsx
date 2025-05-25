@@ -39,22 +39,6 @@ function App() {
   const [repeatType, setRepeatType] = useState('none');
   const [repeatCount, setRepeatCount] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
-  const [adminPassword, setAdminPassword] = useState('');
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [newRoomName, setNewRoomName] = useState('');
-  const [newRoomLocation, setNewRoomLocation] = useState('');
-  const [newRoomCapacity, setNewRoomCapacity] = useState('');
-  const [editingRoom, setEditingRoom] = useState<Room | null>(null);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [roomToDelete, setRoomToDelete] = useState<string>('');
-  const [showReservationModal, setShowReservationModal] = useState(false);
-  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
-  const [showDeleteReservationConfirm, setShowDeleteReservationConfirm] = useState(false);
-  const [reservationToDelete, setReservationToDelete] = useState<string>('');
-  const [showReservationForm, setShowReservationForm] = useState(false);
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<{ start: string; end: string } | null>(null);
-  const [currentDate, setCurrentDate] = useState(new Date());
   const [message, setMessage] = useState('');
 
   // 30분 단위 시간 옵션 생성
@@ -79,7 +63,6 @@ function App() {
     // 현재 날짜로 초기화
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    setCurrentDate(today);
     setSelectedDate(today);
     
     // 폼 초기화
