@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import axios from 'axios';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -146,50 +146,6 @@ function App() {
       fetchReservations();
     } catch (error) {
       console.error('예약 삭제 중 오류 발생:', error);
-    }
-  };
-
-  // 회의실 수정 함수 추가
-  const handleUpdateRoom = async (roomId: string, updatedData: Partial<Room>) => {
-    try {
-      const response = await fetch(`http://localhost:5000/api/rooms/${roomId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedData),
-      });
-
-      if (!response.ok) {
-        throw new Error('회의실 수정에 실패했습니다.');
-      }
-
-      // 회의실 목록 새로고침
-      fetchRooms();
-    } catch (error) {
-      console.error('회의실 수정 중 오류 발생:', error);
-    }
-  };
-
-  // 회의실 삭제 함수 추가
-  const handleDeleteRoom = async (roomId: string) => {
-    if (!window.confirm('정말로 이 회의실을 삭제하시겠습니까? 관련된 모든 예약도 함께 삭제됩니다.')) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`http://localhost:5000/api/rooms/${roomId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('회의실 삭제에 실패했습니다.');
-      }
-
-      // 회의실 목록 새로고침
-      fetchRooms();
-    } catch (error) {
-      console.error('회의실 삭제 중 오류 발생:', error);
     }
   };
 
