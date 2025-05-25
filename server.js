@@ -242,7 +242,7 @@ app.post('/api/reservations', async (req, res) => {
       let currentDate = new Date(startDate);
       
       // 종료일까지 포함하여 반복
-      while (currentDate.getTime() <= repeatUntil.getTime()) {
+      while (true) {
         const newStartTime = new Date(currentDate);
         // 원래 예약의 시간을 설정
         newStartTime.setHours(startHours, startMinutes, startSeconds);
@@ -271,7 +271,7 @@ app.post('/api/reservations', async (req, res) => {
           currentDate.setMonth(currentDate.getMonth() + 1);
         }
 
-        // 마지막 날짜인 경우 종료
+        // 현재 날짜가 종료일을 초과하면 종료
         if (currentDate.getTime() > repeatUntil.getTime()) {
           break;
         }
