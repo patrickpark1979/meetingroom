@@ -270,6 +270,7 @@ app.post('/api/reservations', async (req, res) => {
         }
       }
 
+      console.log('생성된 예약:', reservations);
       res.status(201).json(reservations);
     } else {
       // 단일 예약
