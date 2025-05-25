@@ -225,6 +225,7 @@ app.post('/api/reservations', async (req, res) => {
       const startDate = new Date(startTime);
       const endDate = new Date(endTime);
       const reservations = [];
+      const repeatCountNum = parseInt(repeatCount);
 
       // 시간 차이 계산 (밀리초)
       const timeDiff = endDate.getTime() - startDate.getTime();
@@ -234,16 +235,13 @@ app.post('/api/reservations', async (req, res) => {
       const startMinutes = startDate.getMinutes();
       const startSeconds = startDate.getSeconds();
 
-      let currentDate = new Date(startDate);
-      let count = 0;
-      
       // 첫 번째 예약 생성 (시작일)
       const firstReservation = await createReservation(startDate, endDate);
       reservations.push(firstReservation);
-      count++;
 
-      // 지정된 횟수만큼 반복
-      while (count < repeatCount) {
+      // 나머지 반복 예약 생성
+      let currentDate = new Date(startDate);
+      for (let i = 1; i < repeatCountNum; i++) {
         // 다음 날짜 계산
         if (repeatType === 'weekly') {
           currentDate.setDate(currentDate.getDate() + 7);
@@ -252,10 +250,9 @@ app.post('/api/reservations', async (req, res) => {
         }
 
         const newStartTime = new Date(currentDate);
-        // 원래 예약의 시간을 설정
         newStartTime.setHours(startHours, startMinutes, startSeconds);
         const newEndTime = new Date(newStartTime.getTime() + timeDiff);
-        
+
         // 해당 시간에 이미 예약이 있는지 확인
         const existingReservation = await Reservation.findOne({
           roomId,
@@ -271,8 +268,6 @@ app.post('/api/reservations', async (req, res) => {
           const reservation = await createReservation(newStartTime, newEndTime);
           reservations.push(reservation);
         }
-
-        count++;
       }
 
       res.status(201).json(reservations);
