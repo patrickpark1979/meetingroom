@@ -237,11 +237,12 @@ app.post('/api/reservations', async (req, res) => {
 
       // 날짜만 비교하기 위해 시간을 00:00:00으로 설정
       startDate.setHours(0, 0, 0, 0);
-      repeatUntil.setHours(23, 59, 59, 999);
+      repeatUntil.setHours(0, 0, 0, 0);
 
       let currentDate = new Date(startDate);
       
-      while (currentDate <= repeatUntil) {
+      // 종료일까지 포함하여 반복
+      while (currentDate.getTime() <= repeatUntil.getTime()) {
         const newStartTime = new Date(currentDate);
         // 원래 예약의 시간을 설정
         newStartTime.setHours(startHours, startMinutes, startSeconds);
