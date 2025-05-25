@@ -231,6 +231,9 @@ app.post('/api/reservations', async (req, res) => {
       const timeDiff = endDate.getTime() - startDate.getTime();
 
       let currentDate = new Date(startDate);
+      // 반복 종료일의 시간을 23:59:59로 설정하여 해당 날짜의 예약이 포함되도록 함
+      repeatUntil.setHours(23, 59, 59, 999);
+      
       while (currentDate <= repeatUntil) {
         const newStartTime = new Date(currentDate);
         const newEndTime = new Date(newStartTime.getTime() + timeDiff);
