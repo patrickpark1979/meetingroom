@@ -230,17 +230,21 @@ app.post('/api/reservations', async (req, res) => {
       // 시간 차이 계산 (밀리초)
       const timeDiff = endDate.getTime() - startDate.getTime();
 
-      // 시작 날짜의 시간을 00:00:00으로 설정
+      // 시작 날짜와 종료 날짜의 시간 정보 저장
+      const startHours = startDate.getHours();
+      const startMinutes = startDate.getMinutes();
+      const startSeconds = startDate.getSeconds();
+
+      // 날짜만 비교하기 위해 시간을 00:00:00으로 설정
       startDate.setHours(0, 0, 0, 0);
-      // 종료 날짜의 시간을 23:59:59로 설정
-      repeatUntil.setHours(23, 59, 59, 999);
+      repeatUntil.setHours(0, 0, 0, 0);
 
       let currentDate = new Date(startDate);
       
       while (currentDate <= repeatUntil) {
         const newStartTime = new Date(currentDate);
-        // 원래 예약의 시간을 유지
-        newStartTime.setHours(startDate.getHours(), startDate.getMinutes(), startDate.getSeconds());
+        // 원래 예약의 시간을 설정
+        newStartTime.setHours(startHours, startMinutes, startSeconds);
         const newEndTime = new Date(newStartTime.getTime() + timeDiff);
         
         // 해당 시간에 이미 예약이 있는지 확인
