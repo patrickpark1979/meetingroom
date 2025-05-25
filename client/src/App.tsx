@@ -109,6 +109,13 @@ function App() {
       const startDateTime = new Date(`${selectedDate.toISOString().split('T')[0]}T${startTime}`);
       const endDateTime = new Date(`${selectedDate.toISOString().split('T')[0]}T${endTime}`);
 
+      // 반복 종료일이 있는 경우 해당 날짜의 시간을 23:59:59로 설정
+      let repeatEndDateTime = null;
+      if (repeatType !== 'none' && repeatEndDate) {
+        repeatEndDateTime = new Date(repeatEndDate);
+        repeatEndDateTime.setHours(23, 59, 59, 999);
+      }
+
       console.log('예약 데이터:', {
         roomId: selectedRoom,
         userName,
@@ -117,7 +124,7 @@ function App() {
         startTime: startDateTime.toISOString(),
         endTime: endDateTime.toISOString(),
         repeatType,
-        repeatEndDate: repeatType !== 'none' ? repeatEndDate : undefined
+        repeatEndDate: repeatEndDateTime ? repeatEndDateTime.toISOString() : undefined
       });
 
       const response = await axios.post('http://localhost:5000/api/reservations', {
@@ -128,7 +135,7 @@ function App() {
         startTime: startDateTime.toISOString(),
         endTime: endDateTime.toISOString(),
         repeatType,
-        repeatEndDate: repeatType !== 'none' ? repeatEndDate : undefined
+        repeatEndDate: repeatEndDateTime ? repeatEndDateTime.toISOString() : undefined
       });
 
       if (response.status === 201) {

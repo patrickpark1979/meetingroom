@@ -270,6 +270,11 @@ app.post('/api/reservations', async (req, res) => {
         } else if (repeatType === 'monthly') {
           currentDate.setMonth(currentDate.getMonth() + 1);
         }
+
+        // 마지막 날짜인 경우 종료
+        if (currentDate.getTime() > repeatUntil.getTime()) {
+          break;
+        }
       }
 
       res.status(201).json(reservations);
