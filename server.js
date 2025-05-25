@@ -228,6 +228,10 @@ app.post('/api/reservations', async (req, res) => {
       const reservations = [];
       const repeatCountNum = parseInt(repeatCount);
 
+      console.log('시작 날짜:', startDate);
+      console.log('종료 날짜:', endDate);
+      console.log('반복 횟수:', repeatCountNum);
+
       // 시간 차이 계산 (밀리초)
       const timeDiff = endDate.getTime() - startDate.getTime();
 
@@ -235,6 +239,8 @@ app.post('/api/reservations', async (req, res) => {
       const startHours = startDate.getHours();
       const startMinutes = startDate.getMinutes();
       const startSeconds = startDate.getSeconds();
+
+      console.log('시간 정보:', { startHours, startMinutes, startSeconds, timeDiff });
 
       // 첫 번째 예약 생성 (시작일)
       const firstReservation = await createReservation(startDate, endDate);
@@ -258,8 +264,8 @@ app.post('/api/reservations', async (req, res) => {
         const newEndDate = new Date(newStartDate.getTime() + timeDiff);
 
         console.log(`반복 예약 ${i + 1} 생성 시도:`, {
-          start: newStartDate,
-          end: newEndDate
+          start: newStartDate.toISOString(),
+          end: newEndDate.toISOString()
         });
 
         // 예약 가능 여부 확인

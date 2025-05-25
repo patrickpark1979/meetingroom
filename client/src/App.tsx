@@ -103,7 +103,7 @@ function App() {
       const startDateTime = new Date(`${selectedDate.toISOString().split('T')[0]}T${startTime}`);
       const endDateTime = new Date(`${selectedDate.toISOString().split('T')[0]}T${endTime}`);
 
-      console.log('예약 데이터:', {
+      const reservationData = {
         roomId: selectedRoom,
         userName,
         contact,
@@ -112,18 +112,11 @@ function App() {
         endTime: endDateTime.toISOString(),
         repeatType,
         repeatCount: repeatType !== 'none' ? parseInt(repeatCount) : undefined
-      });
+      };
 
-      const response = await axios.post('http://localhost:5000/api/reservations', {
-        roomId: selectedRoom,
-        userName,
-        contact,
-        meetingName,
-        startTime: startDateTime.toISOString(),
-        endTime: endDateTime.toISOString(),
-        repeatType,
-        repeatCount: repeatType !== 'none' ? parseInt(repeatCount) : undefined
-      });
+      console.log('예약 데이터:', reservationData);
+
+      const response = await axios.post('http://localhost:5000/api/reservations', reservationData);
 
       if (response.status === 201) {
         // 예약 목록 새로 불러오기
