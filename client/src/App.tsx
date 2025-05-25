@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import axios from 'axios';
 import "react-datepicker/dist/react-datepicker.css";
 import './App.css';
-import ko from 'date-fns/locale/ko';
 
 interface Room {
   _id: string;
