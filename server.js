@@ -207,49 +207,9 @@ app.post('/api/reservations', async (req, res) => {
   try {
     const { roomId, userName, contact, meetingName, startTime, endTime, repeatType, repeatEndDate } = req.body;
     
-    // 필수 필드 검증
-    if (!roomId || !userName || !contact || !meetingName || !startTime || !endTime) {
-      return res.status(400).json({ 
-        message: '모든 필수 항목을 입력해주세요. (장소, 예약자명, 연락처, 모임명, 시작시간, 종료시간)' 
-      });
-    }
-
-    // 시간 중복 체크
-    const existingReservation = await Reservation.findOne({
-      roomId,
-      $or: [
-        {
-          $and: [
-            { startTime: { $lte: new Date(startTime) } },
-            { endTime: { $gt: new Date(startTime) } }
-          ]
-        },
-        {
-          $and: [
-            { startTime: { $lt: new Date(endTime) } },
-            { endTime: { $gte: new Date(endTime) } }
-          ]
-        },
-        {
-          $and: [
-            { startTime: { $gte: new Date(startTime) } },
-            { endTime: { $lte: new Date(endTime) } }
-          ]
-        }
-      ]
-    });
-
-    if (existingReservation) {
-      const existingStart = new Date(existingReservation.startTime).toLocaleString();
-      const existingEnd = new Date(existingReservation.endTime).toLocaleString();
-      return res.status(400).json({ 
-        message: `해당 시간에 이미 예약이 있습니다.\n기존 예약: ${existingStart} ~ ${existingEnd}\n다른 시간을 선택해주세요.` 
-      });
-    }
-
-    // 기본 예약 생성
+    // 기본 예약 생성 함수
     const createReservation = async (start, end) => {
-      return await Reservation.create({
+      const reservation = new Reservation({
         roomId,
         userName,
         contact,
@@ -257,71 +217,57 @@ app.post('/api/reservations', async (req, res) => {
         startTime: start,
         endTime: end
       });
+      return await reservation.save();
     };
 
     // 반복 예약 처리
-    if (repeatType !== 'none' && repeatEndDate) {
+    if (repeatType && repeatType !== 'none' && repeatEndDate) {
+      const startDate = new Date(startTime);
+      const endDate = new Date(endTime);
+      const repeatUntil = new Date(repeatEndDate);
       const reservations = [];
-      let currentStart = new Date(startTime);
-      let currentEnd = new Date(endTime);
-      const endDate = new Date(repeatEndDate);
 
-      while (currentStart <= endDate) {
-        // 반복 예약에 대한 중복 체크
-        const repeatExistingReservation = await Reservation.findOne({
+      // 시간 차이 계산 (밀리초)
+      const timeDiff = endDate.getTime() - startDate.getTime();
+
+      let currentDate = new Date(startDate);
+      while (currentDate <= repeatUntil) {
+        const newStartTime = new Date(currentDate);
+        const newEndTime = new Date(newStartTime.getTime() + timeDiff);
+        
+        // 해당 시간에 이미 예약이 있는지 확인
+        const existingReservation = await Reservation.findOne({
           roomId,
           $or: [
             {
-              $and: [
-                { startTime: { $lte: currentStart } },
-                { endTime: { $gt: currentStart } }
-              ]
-            },
-            {
-              $and: [
-                { startTime: { $lt: currentEnd } },
-                { endTime: { $gte: currentEnd } }
-              ]
-            },
-            {
-              $and: [
-                { startTime: { $gte: currentStart } },
-                { endTime: { $lte: currentEnd } }
-              ]
+              startTime: { $lt: newEndTime },
+              endTime: { $gt: newStartTime }
             }
           ]
         });
 
-        if (repeatExistingReservation) {
-          const existingStart = new Date(repeatExistingReservation.startTime).toLocaleString();
-          const existingEnd = new Date(repeatExistingReservation.endTime).toLocaleString();
-          return res.status(400).json({ 
-            message: `반복 예약 중 중복된 시간이 있습니다.\n기존 예약: ${existingStart} ~ ${existingEnd}\n다른 시간을 선택해주세요.` 
-          });
+        if (!existingReservation) {
+          const reservation = await createReservation(newStartTime, newEndTime);
+          reservations.push(reservation);
         }
 
-        const reservation = await createReservation(currentStart, currentEnd);
-        reservations.push(reservation);
-
-        // 다음 예약 날짜 계산
+        // 다음 날짜 계산
         if (repeatType === 'weekly') {
-          currentStart.setDate(currentStart.getDate() + 7);
-          currentEnd.setDate(currentEnd.getDate() + 7);
+          currentDate.setDate(currentDate.getDate() + 7);
         } else if (repeatType === 'monthly') {
-          currentStart.setMonth(currentStart.getMonth() + 1);
-          currentEnd.setMonth(currentEnd.getMonth() + 1);
+          currentDate.setMonth(currentDate.getMonth() + 1);
         }
       }
 
       res.status(201).json(reservations);
     } else {
-      // 단일 예약 생성
-      const reservation = await createReservation(startTime, endTime);
+      // 단일 예약
+      const reservation = await createReservation(new Date(startTime), new Date(endTime));
       res.status(201).json(reservation);
     }
   } catch (error) {
-    console.error('예약 생성 중 오류:', error);
-    res.status(500).json({ message: '예약 생성 중 오류가 발생했습니다.' });
+    console.error('예약 생성 중 오류 발생:', error);
+    res.status(500).json({ message: error.message });
   }
 });
 
