@@ -75,11 +75,22 @@ function App() {
     console.log('컴포넌트 마운트 - 초기 데이터 로딩');
     fetchRooms();
     fetchReservations();
+    
     // 현재 날짜로 초기화
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     setCurrentDate(today);
     setSelectedDate(today);
+    
+    // 폼 초기화
+    setSelectedRoom('');
+    setMeetingName('');
+    setStartTime('');
+    setEndTime('');
+    setUserName('');
+    setContact('');
+    setRepeatType('none');
+    setRepeatCount('');
   }, []);
 
   const fetchRooms = async () => {
