@@ -222,6 +222,7 @@ app.post('/api/reservations', async (req, res) => {
 
     // 반복 예약 처리
     if (repeatType && repeatType !== 'none' && repeatCount) {
+      console.log('반복 예약 요청:', { repeatType, repeatCount });
       const startDate = new Date(startTime);
       const endDate = new Date(endTime);
       const reservations = [];
@@ -238,6 +239,7 @@ app.post('/api/reservations', async (req, res) => {
       // 첫 번째 예약 생성 (시작일)
       const firstReservation = await createReservation(startDate, endDate);
       reservations.push(firstReservation);
+      console.log('첫 번째 예약 생성:', firstReservation);
 
       // 나머지 반복 예약 생성
       let currentDate = new Date(startDate);
@@ -249,31 +251,41 @@ app.post('/api/reservations', async (req, res) => {
           currentDate.setMonth(currentDate.getMonth() + 1);
         }
 
-        const newStartTime = new Date(currentDate);
-        newStartTime.setHours(startHours, startMinutes, startSeconds);
-        const newEndTime = new Date(newStartTime.getTime() + timeDiff);
+        // 새로운 시작 시간과 종료 시간 설정
+        const newStartDate = new Date(currentDate);
+        newStartDate.setHours(startHours, startMinutes, startSeconds);
+        
+        const newEndDate = new Date(newStartDate.getTime() + timeDiff);
 
-        // 해당 시간에 이미 예약이 있는지 확인
+        console.log(`반복 예약 ${i + 1} 생성 시도:`, {
+          start: newStartDate,
+          end: newEndDate
+        });
+
+        // 예약 가능 여부 확인
         const existingReservation = await Reservation.findOne({
           roomId,
           $or: [
             {
-              startTime: { $lt: newEndTime },
-              endTime: { $gt: newStartTime }
+              startTime: { $lt: newEndDate },
+              endTime: { $gt: newStartDate }
             }
           ]
         });
 
         if (!existingReservation) {
-          const reservation = await createReservation(newStartTime, newEndTime);
-          reservations.push(reservation);
+          const newReservation = await createReservation(newStartDate, newEndDate);
+          reservations.push(newReservation);
+          console.log(`반복 예약 ${i + 1} 생성 성공:`, newReservation);
+        } else {
+          console.log(`반복 예약 ${i + 1} 생성 실패: 이미 예약이 있음`);
         }
       }
 
-      console.log('생성된 예약:', reservations);
+      console.log('생성된 전체 예약 목록:', reservations);
       res.status(201).json(reservations);
     } else {
-      // 단일 예약
+      // 단일 예약 생성
       const reservation = await createReservation(new Date(startTime), new Date(endTime));
       res.status(201).json(reservation);
     }
