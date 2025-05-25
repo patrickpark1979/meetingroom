@@ -237,7 +237,7 @@ app.post('/api/reservations', async (req, res) => {
 
       // 날짜만 비교하기 위해 시간을 00:00:00으로 설정
       startDate.setHours(0, 0, 0, 0);
-      repeatUntil.setHours(0, 0, 0, 0);
+      repeatUntil.setHours(23, 59, 59, 999);
 
       let currentDate = new Date(startDate);
       
