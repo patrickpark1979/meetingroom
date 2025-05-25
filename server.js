@@ -228,8 +228,8 @@ app.post('/api/reservations', async (req, res) => {
       const reservations = [];
       const repeatCountNum = parseInt(repeatCount);
 
-      console.log('시작 날짜:', startDate);
-      console.log('종료 날짜:', endDate);
+      console.log('시작 날짜:', startDate.toISOString());
+      console.log('종료 날짜:', endDate.toISOString());
       console.log('반복 횟수:', repeatCountNum);
 
       // 시간 차이 계산 (밀리초)
@@ -245,7 +245,10 @@ app.post('/api/reservations', async (req, res) => {
       // 첫 번째 예약 생성 (시작일)
       const firstReservation = await createReservation(startDate, endDate);
       reservations.push(firstReservation);
-      console.log('첫 번째 예약 생성:', firstReservation);
+      console.log('첫 번째 예약 생성 완료:', {
+        start: firstReservation.startTime,
+        end: firstReservation.endTime
+      });
 
       // 나머지 반복 예약 생성
       let currentDate = new Date(startDate);
@@ -263,7 +266,7 @@ app.post('/api/reservations', async (req, res) => {
         
         const newEndDate = new Date(newStartDate.getTime() + timeDiff);
 
-        console.log(`반복 예약 ${i + 1} 생성 시도:`, {
+        console.log(`반복 예약 ${i + 1}/${repeatCountNum} 생성 시도:`, {
           start: newStartDate.toISOString(),
           end: newEndDate.toISOString()
         });
@@ -282,13 +285,19 @@ app.post('/api/reservations', async (req, res) => {
         if (!existingReservation) {
           const newReservation = await createReservation(newStartDate, newEndDate);
           reservations.push(newReservation);
-          console.log(`반복 예약 ${i + 1} 생성 성공:`, newReservation);
+          console.log(`반복 예약 ${i + 1}/${repeatCountNum} 생성 성공:`, {
+            start: newReservation.startTime,
+            end: newReservation.endTime
+          });
         } else {
-          console.log(`반복 예약 ${i + 1} 생성 실패: 이미 예약이 있음`);
+          console.log(`반복 예약 ${i + 1}/${repeatCountNum} 생성 실패: 이미 예약이 있음`);
         }
       }
 
-      console.log('생성된 전체 예약 목록:', reservations);
+      console.log('생성된 전체 예약 목록:', reservations.map(r => ({
+        start: r.startTime,
+        end: r.endTime
+      })));
       res.status(201).json(reservations);
     } else {
       // 단일 예약 생성
