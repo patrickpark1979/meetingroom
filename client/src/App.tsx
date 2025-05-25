@@ -25,20 +25,36 @@ interface Reservation {
 function App() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState('');
-  const [title, setTitle] = useState('');
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
-  const [repeatType, setRepeatType] = useState('none');
-  const [repeatEndDate, setRepeatEndDate] = useState('');
-  const [userName, setUserName] = useState('');
-  const [contact, setContact] = useState('');
-  const [selectedDate, setSelectedDate] = useState(() => {
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return today;
   });
+  const [selectedRoom, setSelectedRoom] = useState<string>('');
+  const [userName, setUserName] = useState('');
+  const [contact, setContact] = useState('');
+  const [meetingName, setMeetingName] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [repeatType, setRepeatType] = useState('none');
+  const [repeatEndDate, setRepeatEndDate] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [newRoomName, setNewRoomName] = useState('');
+  const [newRoomLocation, setNewRoomLocation] = useState('');
+  const [newRoomCapacity, setNewRoomCapacity] = useState('');
+  const [editingRoom, setEditingRoom] = useState<Room | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [roomToDelete, setRoomToDelete] = useState<string>('');
+  const [showReservationModal, setShowReservationModal] = useState(false);
+  const [selectedReservation, setSelectedReservation] = useState<Reservation | null>(null);
+  const [showDeleteReservationConfirm, setShowDeleteReservationConfirm] = useState(false);
+  const [reservationToDelete, setReservationToDelete] = useState<string>('');
+  const [showReservationForm, setShowReservationForm] = useState(false);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<{ start: string; end: string } | null>(null);
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [message, setMessage] = useState('');
 
   // 30분 단위 시간 옵션 생성
@@ -59,6 +75,11 @@ function App() {
     console.log('컴포넌트 마운트 - 초기 데이터 로딩');
     fetchRooms();
     fetchReservations();
+    // 현재 날짜로 초기화
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    setCurrentDate(today);
+    setSelectedDate(today);
   }, []);
 
   const fetchRooms = async () => {
@@ -92,7 +113,7 @@ function App() {
         roomId: selectedRoom,
         userName,
         contact,
-        meetingName: title,
+        meetingName,
         startTime: startDateTime.toISOString(),
         endTime: endDateTime.toISOString(),
         repeatType,
@@ -103,7 +124,7 @@ function App() {
         roomId: selectedRoom,
         userName,
         contact,
-        meetingName: title,
+        meetingName,
         startTime: startDateTime.toISOString(),
         endTime: endDateTime.toISOString(),
         repeatType,
@@ -116,7 +137,7 @@ function App() {
         
         // 폼 초기화
         setSelectedRoom('');
-        setTitle('');
+        setMeetingName('');
         setStartTime('');
         setEndTime('');
         setUserName('');
