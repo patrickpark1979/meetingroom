@@ -10,7 +10,8 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB 연결
-mongoose.connect('mongodb://localhost:27017/meeting-room', {
+const MONGODB_URI = 'mongodb://127.0.0.1:27017/meeting-room';
+mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(async () => {

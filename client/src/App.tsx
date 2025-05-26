@@ -26,9 +26,9 @@ function App() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return today;
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return now;
   });
   const [selectedRoom, setSelectedRoom] = useState<string>('');
   const [userName, setUserName] = useState('');
@@ -59,12 +59,10 @@ function App() {
     console.log('컴포넌트 마운트 - 초기 데이터 로딩');
     fetchRooms();
     fetchReservations();
-    
     // 현재 날짜로 초기화
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    setSelectedDate(today);
-    
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    setSelectedDate(now);
     // 폼 초기화
     setSelectedRoom('');
     setMeetingName('');
@@ -99,9 +97,14 @@ function App() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // 날짜와 시간을 ISO 문자열로 변환
-      const startDateTime = new Date(`${selectedDate.toISOString().split('T')[0]}T${startTime}`);
-      const endDateTime = new Date(`${selectedDate.toISOString().split('T')[0]}T${endTime}`);
+      // 날짜와 시간을 ISO 문자열로 변환 (한국 시간대 적용)
+      const startDateTime = new Date(selectedDate);
+      const [startHour, startMinute] = startTime.split(':').map(Number);
+      startDateTime.setHours(startHour, startMinute, 0, 0);
+
+      const endDateTime = new Date(selectedDate);
+      const [endHour, endMinute] = endTime.split(':').map(Number);
+      endDateTime.setHours(endHour, endMinute, 0, 0);
 
       const reservationData = {
         roomId: selectedRoom,
@@ -151,121 +154,77 @@ function App() {
     }
   };
 
-  const renderTimeSlots = (room: Room) => {
-    const roomReservations = reservations.filter(reservation => {
-      return reservation.roomId._id === room._id;
-    });
+  const handleTimeSlotClick = (time: string) => {
+    setStartTime(time);
+    // 종료 시간이 시작 시간보다 이전이면 종료 시간 초기화
+    if (endTime && endTime <= time) {
+      setEndTime('');
+    }
+  };
 
-    // 30분 단위 시간 생성
-    const timeSlots = Array.from({ length: 48 }, (_, i) => {
-      const hour = Math.floor(i / 2);
-      const minute = i % 2 === 0 ? '00' : '30';
-      return `${hour.toString().padStart(2, '0')}:${minute}`;
-    });
+  const renderTimeSlots = () => {
+    const slots = [];
+    const startHour = 0;
+    const endHour = 24;
 
-    // 24개씩 2행으로 나누기
-    const firstRow = timeSlots.slice(0, 24);
-    const secondRow = timeSlots.slice(24);
+    for (let hour = startHour; hour < endHour; hour++) {
+      const time = `${hour.toString().padStart(2, '0')}:00`;
+      const isReserved = reservations.some(reservation => {
+        const reservationStart = new Date(reservation.startTime);
+        const reservationEnd = new Date(reservation.endTime);
+        const slotTime = new Date(selectedDate);
+        slotTime.setHours(hour, 0, 0, 0);
+        
+        // 날짜 비교를 위해 시간을 제외한 날짜만 비교
+        const reservationStartDate = new Date(reservationStart);
+        reservationStartDate.setHours(0, 0, 0, 0);
+        const selectedDateOnly = new Date(selectedDate);
+        selectedDateOnly.setHours(0, 0, 0, 0);
+        
+        // 시간을 분 단위로 변환하여 비교
+        const slotTimeInMinutes = hour * 60;
+        const reservationStartInMinutes = reservationStart.getHours() * 60 + reservationStart.getMinutes();
+        const reservationEndInMinutes = reservationEnd.getHours() * 60 + reservationEnd.getMinutes();
+        
+        // roomId가 문자열인 경우와 객체인 경우 모두 처리
+        const roomIdMatch = typeof reservation.roomId === 'string' 
+          ? reservation.roomId === selectedRoom
+          : reservation.roomId._id === selectedRoom;
+        
+        return (
+          roomIdMatch &&
+          selectedDateOnly.getTime() === reservationStartDate.getTime() &&
+          slotTimeInMinutes >= reservationStartInMinutes &&
+          slotTimeInMinutes < reservationEndInMinutes
+        );
+      });
 
-    const renderRow = (slots: string[]) => (
-      <div className="time-slots-row">
-        {slots.map((timeString, i) => {
-          const isReserved = roomReservations.some(reservation => {
-            const startTime = new Date(reservation.startTime);
-            const endTime = new Date(reservation.endTime);
-            const currentTime = new Date(`${selectedDate.toISOString().split('T')[0]}T${timeString}`);
-            
-            // 날짜 비교 (시간은 무시하고 날짜만 비교)
-            const startDate = new Date(startTime.getFullYear(), startTime.getMonth(), startTime.getDate());
-            const endDate = new Date(endTime.getFullYear(), endTime.getMonth(), endTime.getDate());
-            const currentDate = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate());
-            
-            // 시간 비교
-            const startHour = startTime.getHours();
-            const startMinute = startTime.getMinutes();
-            const endHour = endTime.getHours();
-            const endMinute = endTime.getMinutes();
-            const currentHour = currentTime.getHours();
-            const currentMinute = currentTime.getMinutes();
-            
-            const startTimeInMinutes = startHour * 60 + startMinute;
-            const endTimeInMinutes = endHour * 60 + endMinute;
-            const currentTimeInMinutes = currentHour * 60 + currentMinute;
-            
-            return startDate <= currentDate && endDate >= currentDate && 
-                   startTimeInMinutes <= currentTimeInMinutes && endTimeInMinutes > currentTimeInMinutes;
-          });
-          
-          const reservation = isReserved ? roomReservations.find(reservation => {
-            const startTime = new Date(reservation.startTime);
-            const endTime = new Date(reservation.endTime);
-            const currentTime = new Date(`${selectedDate.toISOString().split('T')[0]}T${timeString}`);
-            
-            // 날짜 비교 (시간은 무시하고 날짜만 비교)
-            const startDate = new Date(startTime.getFullYear(), startTime.getMonth(), startTime.getDate());
-            const endDate = new Date(endTime.getFullYear(), endTime.getMonth(), endTime.getDate());
-            const currentDate = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate());
-            
-            // 시간 비교
-            const startHour = startTime.getHours();
-            const startMinute = startTime.getMinutes();
-            const endHour = endTime.getHours();
-            const endMinute = endTime.getMinutes();
-            const currentHour = currentTime.getHours();
-            const currentMinute = currentTime.getMinutes();
-            
-            const startTimeInMinutes = startHour * 60 + startMinute;
-            const endTimeInMinutes = endHour * 60 + endMinute;
-            const currentTimeInMinutes = currentHour * 60 + currentMinute;
-            
-            return startDate <= currentDate && endDate >= currentDate && 
-                   startTimeInMinutes <= currentTimeInMinutes && endTimeInMinutes > currentTimeInMinutes;
-          }) : null;
+      slots.push(
+        <div
+          key={time}
+          className={`time-slot ${isReserved ? 'reserved' : ''}`}
+          onClick={() => !isReserved && handleTimeSlotClick(time)}
+          style={{
+            backgroundColor: isReserved ? '#ffcdd2' : '#fff',
+            cursor: isReserved ? 'not-allowed' : 'pointer',
+            border: isReserved ? '2px solid #ef5350' : '1px solid #eee',
+            boxShadow: isReserved ? '0 2px 4px rgba(239, 83, 80, 0.2)' : 'none'
+          }}
+        >
+          {time}
+          {isReserved && <span className="reserved-label">예약됨</span>}
+        </div>
+      );
+    }
 
-          return (
-            <div 
-              key={i} 
-              className={`time-slot ${isReserved ? 'reserved' : ''}`}
-              title={reservation ? `${reservation.meetingName} (${reservation.userName})` : ''}
-              onClick={() => {
-                if (reservation) {
-                  alert(`모임명: ${reservation.meetingName}\n예약자: ${reservation.userName}\n연락처: ${reservation.contact}`);
-                  if (window.confirm(`${reservation.meetingName} 예약을 삭제하시겠습니까?`)) {
-                    handleDeleteReservation(reservation._id);
-                  }
-                }
-              }}
-              style={{ 
-                cursor: isReserved ? 'pointer' : 'default',
-                position: 'relative',
-                backgroundColor: isReserved ? '#ffcdd2' : '#fff',
-                height: '50px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              {timeString}
-            </div>
-          );
-        })}
-      </div>
-    );
-
-    return (
-      <div className="time-slots-container">
-        {renderRow(firstRow)}
-        {renderRow(secondRow)}
-      </div>
-    );
+    return slots;
   };
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedDateStr = e.target.value;
-    const [year, month, day] = selectedDateStr.split('-').map(Number);
-    const newDate = new Date(year, month - 1, day, 9, 0, 0); // 한국 시간으로 9시로 설정
-    setSelectedDate(newDate);
-    setMessage(''); // 날짜 변경 시 메시지 초기화
+    const selectedDate = new Date(e.target.value);
+    selectedDate.setHours(0, 0, 0, 0);
+    setSelectedDate(selectedDate);
+    setMessage('');
   };
 
   return (
@@ -274,9 +233,9 @@ function App() {
         <nav>
           <ul>
             <li><Link to="/" onClick={() => {
-              const today = new Date();
-              today.setHours(0, 0, 0, 0);
-              setSelectedDate(today);
+              const now = new Date();
+              now.setHours(0, 0, 0, 0);
+              setSelectedDate(now);
             }}>홈</Link></li>
             <li style={{flex: 1, textAlign: 'center', fontWeight: 'bold', fontSize: '1.2rem', color: 'white', letterSpacing: '2px'}}>비전교회</li>
             <li><Link to="/admin">관리자</Link></li>
@@ -302,7 +261,7 @@ function App() {
                           <p>위치: {room.location}</p>
                           <p>수용 인원: {room.capacity}명</p>
                         </div>
-                        {renderTimeSlots(room)}
+                        {renderTimeSlots()}
                       </div>
                     );
                   })}

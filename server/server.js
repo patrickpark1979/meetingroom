@@ -2,6 +2,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
+// 시간대 설정
+process.env.TZ = 'Asia/Seoul';
+
 const app = express();
 
 // 미들웨어 설정
@@ -9,7 +12,7 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB 연결
-mongoose.connect('mongodb://localhost:27017/meeting-room-reservation', {
+mongoose.connect('mongodb://127.0.0.1:27017/meeting-room-reservation', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
@@ -17,9 +20,33 @@ mongoose.connect('mongodb://localhost:27017/meeting-room-reservation', {
   console.log('MongoDB 연결됨');
   console.log('MongoDB에 연결되었습니다.');
   console.log('연결 상태:', mongoose.connection.readyState);
+  // 초기 데이터 생성 (데이터가 없을 때만)
+  initializeData();
 })
 .catch((err) => {
   console.error('MongoDB 연결 실패:', err);
+  process.exit(1); // 연결 실패 시 서버 종료
+});
+
+// MongoDB 연결 상태 모니터링
+mongoose.connection.on('connected', () => {
+  console.log('MongoDB 연결됨');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('MongoDB 연결 오류:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('MongoDB 연결 끊김');
+  // 연결이 끊어지면 재연결 시도
+  setTimeout(() => {
+    console.log('MongoDB 재연결 시도...');
+    mongoose.connect('mongodb://127.0.0.1:27017/meeting-room-reservation', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+  }, 5000);
 });
 
 // 스키마 정의
@@ -35,10 +62,22 @@ const reservationSchema = new mongoose.Schema({
   userName: String,
   contact: String,
   meetingName: String,
-  startTime: { type: Date, required: true },
-  endTime: { type: Date, required: true },
-  createdAt: { type: Date, default: Date.now }
-});
+  startTime: { 
+    type: Date, 
+    required: true,
+    get: (date) => date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })
+  },
+  endTime: { 
+    type: Date, 
+    required: true,
+    get: (date) => date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })
+  },
+  createdAt: { 
+    type: Date, 
+    default: Date.now,
+    get: (date) => date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })
+  }
+}, { toJSON: { getters: true } });
 
 // 모델 생성
 const Room = mongoose.model('Room', roomSchema);
@@ -122,23 +161,38 @@ app.post('/api/reservations', async (req, res) => {
   try {
     console.log('예약 생성 요청 데이터:', req.body);
     
-    const { roomId, userName, contact, meetingName, startTime, endTime, repeatType, repeatEndDate } = req.body;
+    const { roomId, userName, contact, meetingName, startTime, endTime, repeatType, repeatCount } = req.body;
     
-    // 날짜 형식 검증
+    // 날짜 형식 검증 및 한국 시간으로 변환
     const startDateTime = new Date(startTime);
     const endDateTime = new Date(endTime);
-    const repeatEndDateTime = repeatEndDate ? new Date(repeatEndDate) : null;
+    
+    console.log('변환된 시작 시간:', startDateTime);
+    console.log('변환된 종료 시간:', endDateTime);
     
     if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+      console.error('날짜 변환 실패:', { startTime, endTime });
       return res.status(400).json({ message: '유효하지 않은 날짜 형식입니다.' });
     }
 
     // 반복 예약 생성
     const reservations = [];
     let currentDate = new Date(startDateTime);
-    const endDate = repeatEndDateTime || startDateTime;
+    let repeatEndDate;
 
-    while (currentDate <= endDate) {
+    // 반복 종료 날짜 계산
+    if (repeatType !== 'none' && repeatCount) {
+      repeatEndDate = new Date(startDateTime);
+      if (repeatType === 'weekly') {
+        repeatEndDate.setDate(repeatEndDate.getDate() + (7 * parseInt(repeatCount)));
+      } else if (repeatType === 'monthly') {
+        repeatEndDate.setMonth(repeatEndDate.getMonth() + parseInt(repeatCount));
+      }
+    } else {
+      repeatEndDate = startDateTime;
+    }
+
+    while (currentDate <= repeatEndDate) {
       // 예약 시간 중복 체크
       const existingReservation = await Reservation.findOne({
         roomId: roomId,
@@ -180,7 +234,6 @@ app.post('/api/reservations', async (req, res) => {
     const savedReservations = await Reservation.insertMany(reservations);
     console.log('저장된 예약 데이터:', savedReservations);
     
-    // 저장된 예약 데이터를 Room 정보와 함께 반환
     const populatedReservations = await Reservation.find({
       _id: { $in: savedReservations.map(r => r._id) }
     }).populate('roomId');
@@ -269,6 +322,4 @@ async function initializeData() {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`서버가 포트 ${PORT}에서 실행 중입니다.`);
-  // 초기 데이터 생성 (데이터가 없을 때만)
-  initializeData();
 }); 
