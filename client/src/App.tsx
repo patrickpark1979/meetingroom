@@ -143,12 +143,10 @@ function App() {
     }
   };
 
-  const handleDeleteReservation = async (id: string) => {
+  const handleDeleteReservation = async (reservationId: string) => {
     try {
-      await fetch(`http://localhost:5000/api/reservations/${id}`, {
-        method: 'DELETE',
-      });
-      fetchReservations();
+      await axios.delete(`/api/reservations/${reservationId}`);
+      setReservations(reservations.filter(r => r._id !== reservationId));
     } catch (error) {
       console.error('예약 삭제 중 오류 발생:', error);
     }
@@ -261,7 +259,30 @@ function App() {
                           <p>위치: {room.location}</p>
                           <p>수용 인원: {room.capacity}명</p>
                         </div>
-                        {renderTimeSlots()}
+                        <div className="time-slots-container">
+                          {renderTimeSlots()}
+                          {reservations
+                            .filter(reservation => 
+                              (typeof reservation.roomId === 'string' 
+                                ? reservation.roomId === room._id 
+                                : reservation.roomId._id === room._id))
+                            .map(reservation => (
+                              <div key={reservation._id} className="reservation-item">
+                                <div>
+                                  <strong>{reservation.meetingName}</strong>
+                                  <p>예약자: {reservation.userName}</p>
+                                  <p>연락처: {reservation.contact}</p>
+                                  <p>시간: {new Date(reservation.startTime).toLocaleTimeString()} - {new Date(reservation.endTime).toLocaleTimeString()}</p>
+                                </div>
+                                <button 
+                                  onClick={() => handleDeleteReservation(reservation._id)}
+                                  className="delete-button"
+                                >
+                                  삭제
+                                </button>
+                              </div>
+                            ))}
+                        </div>
                       </div>
                     );
                   })}
