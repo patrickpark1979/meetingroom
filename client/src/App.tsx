@@ -178,10 +178,9 @@ function App() {
         const slotTime = new Date(selectedDate);
         slotTime.setHours(hour, 0, 0, 0);
         
-        const reservationStartDate = new Date(reservationStart);
-        reservationStartDate.setHours(0, 0, 0, 0);
-        const selectedDateOnly = new Date(selectedDate);
-        selectedDateOnly.setHours(0, 0, 0, 0);
+        // 시간대를 고려한 날짜 비교
+        const reservationStartDate = new Date(reservationStart.getTime() + (9 * 60 * 60 * 1000));
+        const selectedDateOnly = new Date(selectedDate.getTime() + (9 * 60 * 60 * 1000));
         
         const slotTimeInMinutes = hour * 60;
         const reservationStartInMinutes = reservationStart.getHours() * 60 + reservationStart.getMinutes();
@@ -205,10 +204,9 @@ function App() {
         const slotTime = new Date(selectedDate);
         slotTime.setHours(hour, 30, 0, 0);
         
-        const reservationStartDate = new Date(reservationStart);
-        reservationStartDate.setHours(0, 0, 0, 0);
-        const selectedDateOnly = new Date(selectedDate);
-        selectedDateOnly.setHours(0, 0, 0, 0);
+        // 시간대를 고려한 날짜 비교
+        const reservationStartDate = new Date(reservationStart.getTime() + (9 * 60 * 60 * 1000));
+        const selectedDateOnly = new Date(selectedDate.getTime() + (9 * 60 * 60 * 1000));
         
         const slotTimeInMinutes = hour * 60 + 30;
         const reservationStartInMinutes = reservationStart.getHours() * 60 + reservationStart.getMinutes();
@@ -232,10 +230,9 @@ function App() {
         const slotTime = new Date(selectedDate);
         slotTime.setHours(hour, 0, 0, 0);
         
-        const reservationStartDate = new Date(reservationStart);
-        reservationStartDate.setHours(0, 0, 0, 0);
-        const selectedDateOnly = new Date(selectedDate);
-        selectedDateOnly.setHours(0, 0, 0, 0);
+        // 시간대를 고려한 날짜 비교
+        const reservationStartDate = new Date(reservationStart.getTime() + (9 * 60 * 60 * 1000));
+        const selectedDateOnly = new Date(selectedDate.getTime() + (9 * 60 * 60 * 1000));
         
         const slotTimeInMinutes = hour * 60;
         const reservationStartInMinutes = reservationStart.getHours() * 60 + reservationStart.getMinutes();
@@ -259,10 +256,9 @@ function App() {
         const slotTime = new Date(selectedDate);
         slotTime.setHours(hour, 30, 0, 0);
         
-        const reservationStartDate = new Date(reservationStart);
-        reservationStartDate.setHours(0, 0, 0, 0);
-        const selectedDateOnly = new Date(selectedDate);
-        selectedDateOnly.setHours(0, 0, 0, 0);
+        // 시간대를 고려한 날짜 비교
+        const reservationStartDate = new Date(reservationStart.getTime() + (9 * 60 * 60 * 1000));
+        const selectedDateOnly = new Date(selectedDate.getTime() + (9 * 60 * 60 * 1000));
         
         const slotTimeInMinutes = hour * 60 + 30;
         const reservationStartInMinutes = reservationStart.getHours() * 60 + reservationStart.getMinutes();
@@ -355,7 +351,7 @@ function App() {
     }
 
     return (
-      <div className="time-slots-wrapper">
+      <div className="time-slots-container">
         <div className="time-slots-row">{firstRow}</div>
         <div className="time-slots-row">{secondRow}</div>
       </div>

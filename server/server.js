@@ -65,17 +65,26 @@ const reservationSchema = new mongoose.Schema({
   startTime: { 
     type: Date, 
     required: true,
-    get: (date) => date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })
+    get: (date) => {
+      const koreaTime = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+      return koreaTime;
+    }
   },
   endTime: { 
     type: Date, 
     required: true,
-    get: (date) => date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })
+    get: (date) => {
+      const koreaTime = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+      return koreaTime;
+    }
   },
   createdAt: { 
     type: Date, 
     default: Date.now,
-    get: (date) => date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })
+    get: (date) => {
+      const koreaTime = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+      return koreaTime;
+    }
   }
 }, { toJSON: { getters: true } });
 
@@ -166,6 +175,10 @@ app.post('/api/reservations', async (req, res) => {
     // 날짜 형식 검증 및 한국 시간으로 변환
     const startDateTime = new Date(startTime);
     const endDateTime = new Date(endTime);
+    
+    // UTC 시간을 한국 시간으로 변환
+    startDateTime.setHours(startDateTime.getHours() + 9);
+    endDateTime.setHours(endDateTime.getHours() + 9);
     
     console.log('변환된 시작 시간:', startDateTime);
     console.log('변환된 종료 시간:', endDateTime);
