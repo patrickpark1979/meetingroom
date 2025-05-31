@@ -163,7 +163,6 @@ function App() {
   };
 
   const renderTimeSlots = () => {
-    const slots = [];
     const startHour = 0;
     const endHour = 24;
 
