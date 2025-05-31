@@ -165,12 +165,15 @@ function App() {
     const startHour = 0;
     const endHour = 24;
 
+    // 첫 번째 줄 (00:00 ~ 11:30)
+    const firstRow = [];
+    // 두 번째 줄 (12:00 ~ 23:30)
+    const secondRow = [];
+
     for (let hour = startHour; hour < endHour; hour++) {
-      // 30분 단위로 두 개의 슬롯 생성
       const time1 = `${hour.toString().padStart(2, '0')}:00`;
       const time2 = `${hour.toString().padStart(2, '0')}:30`;
       
-      // 00분 슬롯
       const isReserved1 = reservations.some(reservation => {
         const reservationStart = new Date(reservation.startTime);
         const reservationEnd = new Date(reservation.endTime);
@@ -198,7 +201,6 @@ function App() {
         );
       });
 
-      // 30분 슬롯
       const isReserved2 = reservations.some(reservation => {
         const reservationStart = new Date(reservation.startTime);
         const reservationEnd = new Date(reservation.endTime);
@@ -226,16 +228,30 @@ function App() {
         );
       });
 
-      slots.push(
+      const timeSlot1 = (
         <div key={time1} className={`time-slot ${isReserved1 ? 'reserved' : ''}`} onClick={() => handleTimeSlotClick(time1)}>
           {time1}
-        </div>,
+        </div>
+      );
+      const timeSlot2 = (
         <div key={time2} className={`time-slot ${isReserved2 ? 'reserved' : ''}`} onClick={() => handleTimeSlotClick(time2)}>
           {time2}
         </div>
       );
+
+      if (hour < 12) {
+        firstRow.push(timeSlot1, timeSlot2);
+      } else {
+        secondRow.push(timeSlot1, timeSlot2);
+      }
     }
-    return slots;
+
+    return (
+      <div className="time-slots-wrapper">
+        <div className="time-slots-row">{firstRow}</div>
+        <div className="time-slots-row">{secondRow}</div>
+      </div>
+    );
   };
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
