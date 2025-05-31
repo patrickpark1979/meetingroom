@@ -360,8 +360,8 @@ function App() {
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedDate = new Date(e.target.value);
-    // 한국 시간으로 변환
-    const koreaTime = new Date(selectedDate.getTime() + (9 * 60 * 60 * 1000));
+    // 한국 시간으로 변환 (시간대 오프셋 제거)
+    const koreaTime = new Date(selectedDate.getTime() - (selectedDate.getTimezoneOffset() * 60000));
     koreaTime.setHours(0, 0, 0, 0);
     setSelectedDate(koreaTime);
     setMessage('');
@@ -432,7 +432,6 @@ function App() {
                       id="date"
                       value={selectedDate.toISOString().split('T')[0]}
                       onChange={handleDateChange}
-                      min={new Date().toISOString().split('T')[0]}
                       required
                     />
                   </div>
