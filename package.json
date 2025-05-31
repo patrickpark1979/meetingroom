@@ -1,12 +1,12 @@
 {
-  "name": "meetingroom",
+  "name": "meeting-room-reservation",
   "version": "1.0.0",
-  "description": "Meeting Room Reservation System",
-  "main": "server.js",
+  "description": "회의실 예약 시스템",
+  "main": "server/server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node server/server.js",
     "build": "cd client && npm install && npm run build",
-    "dev": "nodemon server.js",
+    "dev": "nodemon server/server.js",
     "pm2": "pm2 start server.js --name meeting-room-server",
     "pm2:stop": "pm2 stop meeting-room-server",
     "pm2:restart": "pm2 restart meeting-room-server"
