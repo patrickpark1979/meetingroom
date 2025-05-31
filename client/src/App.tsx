@@ -299,6 +299,7 @@ function App() {
                 <h4>{reservation1.meetingName}</h4>
                 <p>예약자: {reservation1.userName}</p>
                 <p>연락처: {reservation1.contact}</p>
+                <p>시간: {new Date(reservation1.startTime).toLocaleString('ko-KR', { hour: '2-digit', minute: '2-digit' })} - {new Date(reservation1.endTime).toLocaleString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</p>
                 <button 
                   className="delete-reservation-btn"
                   onClick={(e) => {
@@ -330,6 +331,7 @@ function App() {
                 <h4>{reservation2.meetingName}</h4>
                 <p>예약자: {reservation2.userName}</p>
                 <p>연락처: {reservation2.contact}</p>
+                <p>시간: {new Date(reservation2.startTime).toLocaleString('ko-KR', { hour: '2-digit', minute: '2-digit' })} - {new Date(reservation2.endTime).toLocaleString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</p>
                 <button 
                   className="delete-reservation-btn"
                   onClick={(e) => {
@@ -403,27 +405,6 @@ function App() {
                         </div>
                         <div className="time-slots-container">
                           {renderTimeSlots()}
-                          {reservations
-                            .filter(reservation => 
-                              (typeof reservation.roomId === 'string' 
-                                ? reservation.roomId === room._id 
-                                : reservation.roomId._id === room._id))
-                            .map(reservation => (
-                              <div key={reservation._id} className="reservation-item">
-                                <div>
-                                  <strong>{reservation.meetingName}</strong>
-                                  <p>예약자: {reservation.userName}</p>
-                                  <p>연락처: {reservation.contact}</p>
-                                  <p>시간: {new Date(reservation.startTime).toLocaleTimeString()} - {new Date(reservation.endTime).toLocaleTimeString()}</p>
-                                </div>
-                                <button 
-                                  onClick={() => handleDeleteReservation(reservation._id)}
-                                  className="delete-button"
-                                >
-                                  삭제
-                                </button>
-                              </div>
-                            ))}
                         </div>
                       </div>
                     );
