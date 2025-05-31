@@ -823,6 +823,38 @@ h2, h3 {
   background-color: #c82333;
 }
 
+/* 마우스 오버 시 보여줄 간단한 정보 */
+.reservation-preview {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 1000;
+  white-space: nowrap;
+  display: none;
+}
+
+.time-slot.reserved:hover .reservation-preview {
+  display: block;
+}
+
+/* 클릭 시 보여줄 상세 정보 */
+.reservation-details {
+  display: none;
+}
+
+.time-slot.reserved.clicked .reservation-details {
+  display: block;
+}
+
+.time-slot.reserved.clicked .reservation-preview {
+  display: none;
+}
+
 .today-button {
   padding: 4px 8px;
   font-size: 0.8rem;

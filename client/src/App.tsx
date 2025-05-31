@@ -42,6 +42,7 @@ function App() {
   const [repeatCount, setRepeatCount] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [message, setMessage] = useState('');
+  const [clickedSlotId, setClickedSlotId] = useState<string | null>(null);
 
   // 30분 단위 시간 옵션 생성
   const generateTimeOptions = () => {
@@ -152,6 +153,10 @@ function App() {
     } catch (error) {
       console.error('예약 삭제 중 오류 발생:', error);
     }
+  };
+
+  const handleTimeSlotClick = (slotId: string) => {
+    setClickedSlotId(clickedSlotId === slotId ? null : slotId);
   };
 
   const renderTimeSlots = () => {
@@ -275,46 +280,67 @@ function App() {
         );
       });
 
+      const slotId1 = `${selectedRoom}-${time1}`;
+      const slotId2 = `${selectedRoom}-${time2}`;
+
       const timeSlot1 = (
-        <div key={time1} className={`time-slot ${isReserved1 ? 'reserved' : ''}`}>
+        <div 
+          key={time1} 
+          className={`time-slot ${isReserved1 ? 'reserved' : ''} ${clickedSlotId === slotId1 ? 'clicked' : ''}`}
+          onClick={() => isReserved1 && handleTimeSlotClick(slotId1)}
+        >
           {time1}
           {isReserved1 && reservation1 && (
-            <div className="reservation-details">
-              <h4>{reservation1.meetingName}</h4>
-              <p>예약자: {reservation1.userName}</p>
-              <p>연락처: {reservation1.contact}</p>
-              <button 
-                className="delete-reservation-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteReservation(reservation1._id);
-                }}
-              >
-                예약 삭제
-              </button>
-            </div>
+            <>
+              <div className="reservation-preview">
+                {reservation1.meetingName} - {reservation1.userName}
+              </div>
+              <div className="reservation-details">
+                <h4>{reservation1.meetingName}</h4>
+                <p>예약자: {reservation1.userName}</p>
+                <p>연락처: {reservation1.contact}</p>
+                <button 
+                  className="delete-reservation-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteReservation(reservation1._id);
+                  }}
+                >
+                  예약 삭제
+                </button>
+              </div>
+            </>
           )}
         </div>
       );
 
       const timeSlot2 = (
-        <div key={time2} className={`time-slot ${isReserved2 ? 'reserved' : ''}`}>
+        <div 
+          key={time2} 
+          className={`time-slot ${isReserved2 ? 'reserved' : ''} ${clickedSlotId === slotId2 ? 'clicked' : ''}`}
+          onClick={() => isReserved2 && handleTimeSlotClick(slotId2)}
+        >
           {time2}
           {isReserved2 && reservation2 && (
-            <div className="reservation-details">
-              <h4>{reservation2.meetingName}</h4>
-              <p>예약자: {reservation2.userName}</p>
-              <p>연락처: {reservation2.contact}</p>
-              <button 
-                className="delete-reservation-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteReservation(reservation2._id);
-                }}
-              >
-                예약 삭제
-              </button>
-            </div>
+            <>
+              <div className="reservation-preview">
+                {reservation2.meetingName} - {reservation2.userName}
+              </div>
+              <div className="reservation-details">
+                <h4>{reservation2.meetingName}</h4>
+                <p>예약자: {reservation2.userName}</p>
+                <p>연락처: {reservation2.contact}</p>
+                <button 
+                  className="delete-reservation-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteReservation(reservation2._id);
+                  }}
+                >
+                  예약 삭제
+                </button>
+              </div>
+            </>
           )}
         </div>
       );
