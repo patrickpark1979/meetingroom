@@ -900,4 +900,12 @@ h2, h3 {
 
 .room-actions .delete-button:hover {
   background-color: #ffcdd2;
+}
+
+/* 관리자 모드 수정/삭제 버튼 크기 동일하게 설정 */
+.room-buttons .edit-button,
+.room-buttons .delete-button {
+  width: 70px; /* 너비를 70px로 설정 */
+  height: 70px; /* 높이를 70px로 설정 (기존과 동일) */
+  flex-shrink: 0; /* 버튼 크기가 줄어들지 않도록 설정 */
 } 
