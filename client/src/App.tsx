@@ -166,25 +166,54 @@ function App() {
     const endHour = 24;
 
     for (let hour = startHour; hour < endHour; hour++) {
-      const time = `${hour.toString().padStart(2, '0')}:00`;
-      const isReserved = reservations.some(reservation => {
+      // 30분 단위로 두 개의 슬롯 생성
+      const time1 = `${hour.toString().padStart(2, '0')}:00`;
+      const time2 = `${hour.toString().padStart(2, '0')}:30`;
+      
+      // 00분 슬롯
+      const isReserved1 = reservations.some(reservation => {
         const reservationStart = new Date(reservation.startTime);
         const reservationEnd = new Date(reservation.endTime);
         const slotTime = new Date(selectedDate);
         slotTime.setHours(hour, 0, 0, 0);
         
-        // 날짜 비교를 위해 시간을 제외한 날짜만 비교
         const reservationStartDate = new Date(reservationStart);
         reservationStartDate.setHours(0, 0, 0, 0);
         const selectedDateOnly = new Date(selectedDate);
         selectedDateOnly.setHours(0, 0, 0, 0);
         
-        // 시간을 분 단위로 변환하여 비교
         const slotTimeInMinutes = hour * 60;
         const reservationStartInMinutes = reservationStart.getHours() * 60 + reservationStart.getMinutes();
         const reservationEndInMinutes = reservationEnd.getHours() * 60 + reservationEnd.getMinutes();
         
-        // roomId가 문자열인 경우와 객체인 경우 모두 처리
+        const roomIdMatch = typeof reservation.roomId === 'string' 
+          ? reservation.roomId === selectedRoom
+          : reservation.roomId._id === selectedRoom;
+        
+        return (
+          roomIdMatch &&
+          selectedDateOnly.getTime() === reservationStartDate.getTime() &&
+          slotTimeInMinutes >= reservationStartInMinutes &&
+          slotTimeInMinutes < reservationEndInMinutes
+        );
+      });
+
+      // 30분 슬롯
+      const isReserved2 = reservations.some(reservation => {
+        const reservationStart = new Date(reservation.startTime);
+        const reservationEnd = new Date(reservation.endTime);
+        const slotTime = new Date(selectedDate);
+        slotTime.setHours(hour, 30, 0, 0);
+        
+        const reservationStartDate = new Date(reservationStart);
+        reservationStartDate.setHours(0, 0, 0, 0);
+        const selectedDateOnly = new Date(selectedDate);
+        selectedDateOnly.setHours(0, 0, 0, 0);
+        
+        const slotTimeInMinutes = hour * 60 + 30;
+        const reservationStartInMinutes = reservationStart.getHours() * 60 + reservationStart.getMinutes();
+        const reservationEndInMinutes = reservationEnd.getHours() * 60 + reservationEnd.getMinutes();
+        
         const roomIdMatch = typeof reservation.roomId === 'string' 
           ? reservation.roomId === selectedRoom
           : reservation.roomId._id === selectedRoom;
@@ -198,23 +227,14 @@ function App() {
       });
 
       slots.push(
-        <div
-          key={time}
-          className={`time-slot ${isReserved ? 'reserved' : ''}`}
-          onClick={() => !isReserved && handleTimeSlotClick(time)}
-          style={{
-            backgroundColor: isReserved ? '#ffcdd2' : '#fff',
-            cursor: isReserved ? 'not-allowed' : 'pointer',
-            border: isReserved ? '2px solid #ef5350' : '1px solid #eee',
-            boxShadow: isReserved ? '0 2px 4px rgba(239, 83, 80, 0.2)' : 'none'
-          }}
-        >
-          {time}
-          {isReserved && <span className="reserved-label">예약됨</span>}
+        <div key={time1} className={`time-slot ${isReserved1 ? 'reserved' : ''}`} onClick={() => handleTimeSlotClick(time1)}>
+          {time1}
+        </div>,
+        <div key={time2} className={`time-slot ${isReserved2 ? 'reserved' : ''}`} onClick={() => handleTimeSlotClick(time2)}>
+          {time2}
         </div>
       );
     }
-
     return slots;
   };
 
