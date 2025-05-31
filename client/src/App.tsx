@@ -154,14 +154,6 @@ function App() {
     }
   };
 
-  const handleTimeSlotClick = (time: string) => {
-    setStartTime(time);
-    // 종료 시간이 시작 시간보다 이전이면 종료 시간 초기화
-    if (endTime && endTime <= time) {
-      setEndTime('');
-    }
-  };
-
   const renderTimeSlots = () => {
     const startHour = 0;
     const endHour = 24;
