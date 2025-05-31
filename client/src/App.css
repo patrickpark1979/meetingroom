@@ -753,14 +753,15 @@ h2, h3 {
 
 .time-slot {
   height: 20px;
+  border: 1px solid #ddd;
   font-size: 0.7rem;
-  background-color: white;
-  border: 1px solid #e0e0e0;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.2s;
+  position: relative;
+  background-color: white;
+  transition: all 0.2s ease;
 }
 
 .time-slot:hover {
@@ -768,32 +769,58 @@ h2, h3 {
 }
 
 .time-slot.reserved {
+  background-color: #ffebee;
+  border-color: #ffcdd2;
+  cursor: pointer;
+}
+
+.time-slot.reserved:hover {
   background-color: #ffcdd2;
-  cursor: not-allowed;
 }
 
-.room-item {
+.reservation-details {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
   background-color: white;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  height: auto;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
+  min-width: 200px;
+  display: none;
 }
 
-.room-info {
-  margin-bottom: 10px;
+.time-slot.reserved:hover .reservation-details {
+  display: block;
 }
 
-.room-info h3 {
+.reservation-details h4 {
   margin: 0 0 5px 0;
   color: #333;
 }
 
-.room-info p {
-  margin: 2px 0;
+.reservation-details p {
+  margin: 3px 0;
   color: #666;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+}
+
+.delete-reservation-btn {
+  margin-top: 8px;
+  padding: 4px 8px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  width: 100%;
+}
+
+.delete-reservation-btn:hover {
+  background-color: #c82333;
 }
 
 .today-button {

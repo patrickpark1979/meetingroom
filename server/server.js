@@ -254,6 +254,15 @@ app.delete('/api/reservations/:id', async (req, res) => {
   }
 });
 
+app.delete('/api/reservations', async (req, res) => {
+  try {
+    await Reservation.deleteMany({});
+    res.status(200).json({ message: '모든 예약이 삭제되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // 초기 데이터 삽입
 async function initializeData() {
   try {

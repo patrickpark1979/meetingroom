@@ -27,8 +27,10 @@ function App() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
     const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    return now;
+    // 한국 시간으로 변환
+    const koreaTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+    koreaTime.setHours(0, 0, 0, 0);
+    return koreaTime;
   });
   const [selectedRoom, setSelectedRoom] = useState<string>('');
   const [userName, setUserName] = useState('');
@@ -228,14 +230,101 @@ function App() {
         );
       });
 
+      const reservation1 = reservations.find(reservation => {
+        const reservationStart = new Date(reservation.startTime);
+        const reservationEnd = new Date(reservation.endTime);
+        const slotTime = new Date(selectedDate);
+        slotTime.setHours(hour, 0, 0, 0);
+        
+        const reservationStartDate = new Date(reservationStart);
+        reservationStartDate.setHours(0, 0, 0, 0);
+        const selectedDateOnly = new Date(selectedDate);
+        selectedDateOnly.setHours(0, 0, 0, 0);
+        
+        const slotTimeInMinutes = hour * 60;
+        const reservationStartInMinutes = reservationStart.getHours() * 60 + reservationStart.getMinutes();
+        const reservationEndInMinutes = reservationEnd.getHours() * 60 + reservationEnd.getMinutes();
+        
+        const roomIdMatch = typeof reservation.roomId === 'string' 
+          ? reservation.roomId === selectedRoom
+          : reservation.roomId._id === selectedRoom;
+        
+        return (
+          roomIdMatch &&
+          selectedDateOnly.getTime() === reservationStartDate.getTime() &&
+          slotTimeInMinutes >= reservationStartInMinutes &&
+          slotTimeInMinutes < reservationEndInMinutes
+        );
+      });
+
+      const reservation2 = reservations.find(reservation => {
+        const reservationStart = new Date(reservation.startTime);
+        const reservationEnd = new Date(reservation.endTime);
+        const slotTime = new Date(selectedDate);
+        slotTime.setHours(hour, 30, 0, 0);
+        
+        const reservationStartDate = new Date(reservationStart);
+        reservationStartDate.setHours(0, 0, 0, 0);
+        const selectedDateOnly = new Date(selectedDate);
+        selectedDateOnly.setHours(0, 0, 0, 0);
+        
+        const slotTimeInMinutes = hour * 60 + 30;
+        const reservationStartInMinutes = reservationStart.getHours() * 60 + reservationStart.getMinutes();
+        const reservationEndInMinutes = reservationEnd.getHours() * 60 + reservationEnd.getMinutes();
+        
+        const roomIdMatch = typeof reservation.roomId === 'string' 
+          ? reservation.roomId === selectedRoom
+          : reservation.roomId._id === selectedRoom;
+        
+        return (
+          roomIdMatch &&
+          selectedDateOnly.getTime() === reservationStartDate.getTime() &&
+          slotTimeInMinutes >= reservationStartInMinutes &&
+          slotTimeInMinutes < reservationEndInMinutes
+        );
+      });
+
       const timeSlot1 = (
-        <div key={time1} className={`time-slot ${isReserved1 ? 'reserved' : ''}`} onClick={() => handleTimeSlotClick(time1)}>
+        <div key={time1} className={`time-slot ${isReserved1 ? 'reserved' : ''}`}>
           {time1}
+          {isReserved1 && reservation1 && (
+            <div className="reservation-details">
+              <h4>{reservation1.meetingName}</h4>
+              <p>예약자: {reservation1.userName}</p>
+              <p>연락처: {reservation1.contact}</p>
+              <button 
+                className="delete-reservation-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteReservation(reservation1._id);
+                }}
+              >
+                예약 삭제
+              </button>
+            </div>
+          )}
         </div>
       );
+
       const timeSlot2 = (
-        <div key={time2} className={`time-slot ${isReserved2 ? 'reserved' : ''}`} onClick={() => handleTimeSlotClick(time2)}>
+        <div key={time2} className={`time-slot ${isReserved2 ? 'reserved' : ''}`}>
           {time2}
+          {isReserved2 && reservation2 && (
+            <div className="reservation-details">
+              <h4>{reservation2.meetingName}</h4>
+              <p>예약자: {reservation2.userName}</p>
+              <p>연락처: {reservation2.contact}</p>
+              <button 
+                className="delete-reservation-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteReservation(reservation2._id);
+                }}
+              >
+                예약 삭제
+              </button>
+            </div>
+          )}
         </div>
       );
 
@@ -347,7 +436,6 @@ function App() {
                       id="date"
                       value={selectedDate.toISOString().split('T')[0]}
                       onChange={handleDateChange}
-                      min={new Date().toISOString().split('T')[0]}
                       required
                     />
                   </div>
