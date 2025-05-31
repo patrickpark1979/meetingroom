@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+require('dotenv').config();
 
 // 시간대 설정
 process.env.TZ = 'Asia/Seoul';
@@ -12,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB 연결
-mongoose.connect('mongodb://127.0.0.1:27017/meeting-room-reservation', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/meeting-room-reservation', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
@@ -42,7 +43,7 @@ mongoose.connection.on('disconnected', () => {
   // 연결이 끊어지면 재연결 시도
   setTimeout(() => {
     console.log('MongoDB 재연결 시도...');
-    mongoose.connect('mongodb://127.0.0.1:27017/meeting-room-reservation', {
+    mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/meeting-room-reservation', {
       useNewUrlParser: true,
       useUnifiedTopology: true
     });
